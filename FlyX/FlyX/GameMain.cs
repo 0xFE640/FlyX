@@ -4,9 +4,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-
-
-
 // ReSharper disable CompareOfFloatsByEqualityOperator
 // ReSharper disable ConvertIfStatementToConditionalTernaryExpression
 // ReSharper disable ObjectCreationAsStatement
@@ -16,32 +13,32 @@ namespace FlyX
 {
     public class GameMain : Game
     {
-        //private const int MaxLimit = 700;
-        private readonly int displayWidth = 1024;
-        private readonly int displayHeight = 768;
+        private  float currentTime = 0f;
+        private  float durationTime = 0f;
+        private Color defaultFlyColor = Color.White;
+        private const int displayWidth = 1024;
+        private const int displayHeight = 768;
         private readonly Random coord = new Random();
-        private int offeset = 1;
-        private const float koefSpeed = 100;
+        private int step = 1;
+        private  float koefSpeed = 200;
+        private const float delayHit = 0.20f;
+        private int hitPoints = 100;
+        private const int hitDamage = 10;
 
-        private ArrayList Gaps { get; set; }
-
-        public int X { get; private set; }
-
-        public int Y { get; private set; }
-
+        private ArrayList Traces { get; set; }
+        public int randX { get; private set; }
+        public int randY { get; private set; }
         public SpriteFont Font { get; private set; }
 
-        private bool hit;
+        private bool isDead;
         private MouseState currentMouseState, oldMouseState;
         private SpriteBatch spriteBatch;
-        private Texture2D flyTexture, squashedTexture, aimTexture, gapTexture, barTexture;
-        private Vector2 flyPosition, aimPosition;
-        private Rectangle lifeBarPosition;
-        private int lifePosition=100;
-        
+        private Texture2D flyTexture, squashedTexture, crosshairTexture, traceTexture, lifebarTexture;
+        private Vector2 flyPosition, crosshairPosition;
+        public Rectangle LifeBarPosition { get; private set; }
 
-        private int scroll = 0;
-        
+      //  private int scroll = 0;
+
         public GameMain()
         {
             new GraphicsDeviceManager(this)
@@ -49,83 +46,95 @@ namespace FlyX
                     PreferredBackBufferHeight = displayHeight,
                     PreferredBackBufferWidth = displayWidth
             };
-
-            // graphics.IsFullScreen = true;
-            // IsMouseVisible = true;    
+           
             Content.RootDirectory = "Content";
             flyPosition = new Vector2(50, 50);
-            aimPosition = new Vector2();
-            Gaps = new ArrayList();
-        }
-     
-        protected override void Initialize()
-        {
-            X = coord.Next(displayWidth);
-            Y = coord.Next(displayHeight);
-
+            crosshairPosition = new Vector2();
+            Traces = new ArrayList();
+            randX = coord.Next(displayWidth);
+            randY = coord.Next(displayHeight);
+            // graphics.IsFullScreen = true;
+            // IsMouseVisible = true;    
         
         }
-      
-        private void checkHit()
-        {
-            if (X > flyPosition.X)
-                flyPosition.X += offeset;
-            else
-                if (X < flyPosition.X)
-                    flyPosition.X -= offeset;
 
-            if (X == flyPosition.X)
-                X = coord.Next(displayWidth);
-
-            if (Y > flyPosition.Y)
-                flyPosition.Y += offeset;
-            else
-                if (Y < flyPosition.Y)
-                    flyPosition.Y -= offeset;
-
-            if (Y == flyPosition.Y)
-                Y = coord.Next(displayHeight);
-
-            if (currentMouseState.LeftButton == ButtonState.Pressed &&
-                currentMouseState.X >= flyPosition.X &&
-                currentMouseState.X <= flyPosition.X + flyTexture.Width &&
-                currentMouseState.Y >= flyPosition.Y &&
-                currentMouseState.Y <= flyPosition.Y + flyTexture.Height)
-            {
-                if (currentMouseState.LeftButton == ButtonState.Pressed &&
-                    oldMouseState.LeftButton == ButtonState.Released)
-                {
-                    lifePosition -= 20;
-                    if (lifePosition <= 0)
-                    {
-               hit = true;
-               offeset = 0;
-            }
-                }
-            }
-
-            if (currentMouseState.LeftButton == ButtonState.Pressed && 
-                oldMouseState.LeftButton == ButtonState.Released) 
-                Gaps.Add(new Vector2(currentMouseState.X, currentMouseState.Y));
-
-        }
-     
         // ReSharper disable once RedundantOverridenMember
         protected override void Initialize()
         {
-            
 
             base.Initialize();
         }
-        
+      
+        private void checkHit( )
+        {
+            if (randX > flyPosition.X)
+                flyPosition.X += step;
+            else
+                if (randX < flyPosition.X)
+                    flyPosition.X -= step;
+
+            if (randX == flyPosition.X)
+                randX = coord.Next(displayWidth);
+
+            if (randY > flyPosition.Y)
+                flyPosition.Y += step;
+            else
+                if (randY < flyPosition.Y)
+                    flyPosition.Y -= step;
+
+            if (randY == flyPosition.Y)
+                randY = coord.Next(displayHeight);
+
+            if (currentMouseState.LeftButton == ButtonState.Pressed)
+            {
+                if (currentMouseState.X >= flyPosition.X &&
+                    currentMouseState.X <= flyPosition.X + flyTexture.Width &&
+                    currentMouseState.Y >= flyPosition.Y &&
+                    currentMouseState.Y <= flyPosition.Y + flyTexture.Height)
+                {
+                    if (currentMouseState.LeftButton == ButtonState.Pressed &&
+                        oldMouseState.LeftButton == ButtonState.Released)
+                    {
+                        defaultFlyColor = Color.Red;
+                        if (durationTime == 0f)
+                            durationTime = currentTime;
+
+                        hitPoints -= hitDamage;
+                        koefSpeed += 50;
+
+                        if (hitPoints <= 0)
+                        {
+                            isDead = true;
+                            step = 0;
+                        }
+                    }
+                    
+                }
+                else
+                {
+                    if (currentMouseState.LeftButton == ButtonState.Pressed &&
+                        oldMouseState.LeftButton == ButtonState.Released)
+                        Traces.Add(new Vector2(currentMouseState.X, currentMouseState.Y));
+                }
+            }
+
+            if (currentTime > durationTime + delayHit)
+            {
+                defaultFlyColor = Color.White;
+                durationTime = 0f;
+            }
+
+        }
+     
         protected override void LoadContent()
         {
             spriteBatch = new SpriteBatch(GraphicsDevice);
             flyTexture = Content.Load<Texture2D>(@"Images/Fly1");
             squashedTexture = Content.Load<Texture2D>(@"Images/squashed-fly");
-            aimTexture = Content.Load<Texture2D>(@"Images/aim");
-            gapTexture = Content.Load<Texture2D>(@"Images/gap");
-            barTexture = Content.Load<Texture2D>(@"Images/bar");
+            crosshairTexture = Content.Load<Texture2D>(@"Images/aim");
+            traceTexture = Content.Load<Texture2D>(@"Images/gap");
+            lifebarTexture = Content.Load<Texture2D>(@"Images/bar");
+            
             Font = Content.Load<SpriteFont>(@"Images/Font");
 
             
@@ -137,29 +146,30 @@ namespace FlyX
 
         protected override void Update(GameTime gameTime)
         {
-           TargetElapsedTime = TimeSpan.FromSeconds(1.0f /koefSpeed);
+          
+           TargetElapsedTime = TimeSpan.FromSeconds(1.0f /koefSpeed); //Speed of Fly
+           currentTime += (float)gameTime.ElapsedGameTime.TotalSeconds; 
            
            oldMouseState = currentMouseState;
            currentMouseState = Mouse.GetState();
-           aimPosition.X = currentMouseState.X;
-           aimPosition.Y = currentMouseState.Y;
-           scroll = 300; // currentMouseState.ScrollWheelValue;
+           crosshairPosition.X = currentMouseState.X;
+           crosshairPosition.Y = currentMouseState.Y;
+           // = 300; // currentMouseState.ScrollWheelValue;
            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                Exit();
             if (Keyboard.GetState().IsKeyDown(Keys.Back))
-                lifePosition -= 1;
-
+                hitPoints -= 1;
 
             if (Keyboard.GetState().IsKeyDown(Keys.Space))
             {
-                lifePosition = 100;
-                hit = false;
-                offeset = 1;
+                hitPoints = 100;
+                isDead = false;
+                step = 1;
             }
-            checkHit();
-            lifeBarPosition = new Rectangle((int)flyPosition.X, (int)flyPosition.Y + flyTexture.Height, lifePosition, 10); 
+           checkHit();
+           LifeBarPosition = new Rectangle((int)flyPosition.X, (int)flyPosition.Y + flyTexture.Height, hitPoints, 10); 
 
-            base.Update(gameTime);
+           base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
@@ -167,45 +177,25 @@ namespace FlyX
             GraphicsDevice.Clear(Color.LightSlateGray);
 
             spriteBatch.Begin();
-            if (Gaps.Count > 0)
-                foreach (Vector2 hole in Gaps) 
-                    spriteBatch.Draw(gapTexture, hole, Color.White);
-            if (!hit)
+            if (Traces.Count > 0)
+                foreach (Vector2 traces in Traces) 
+                    spriteBatch.Draw(traceTexture, traces, Color.White);
+            if (!isDead)
             {
-                spriteBatch.Draw(flyTexture, flyPosition, Color.White);
-                spriteBatch.Draw(barTexture, lifeBarPosition, Color.White);
+                spriteBatch.Draw(flyTexture, flyPosition, defaultFlyColor);
+                spriteBatch.Draw(lifebarTexture, LifeBarPosition, Color.Yellow);
             }
             //spriteBatch.DrawString(spriteFont, "x="+x.ToString()+"y="+y.ToString(), new Vector2(10, 10), Color.Black);
             else
-                //spriteBatch.DrawString(spriteFont, "Bang", new Vector2(vector.X, vector.Y), Color.Black);
+                //spriteBatch.DrawString(spriteFont, "Bang", new Vector2(vector.randX, vector.randY), Color.Black);
                 spriteBatch.Draw(squashedTexture, flyPosition, Color.White);
 
-            spriteBatch.Draw(aimTexture, aimPosition, Color.White);
-            spriteBatch.DrawString(Font,lifePosition.ToString(), new Vector2(lifeBarPosition.X+40, lifeBarPosition.Y-2), Color.Black);
+            spriteBatch.Draw(crosshairTexture, crosshairPosition, Color.White);
+            spriteBatch.DrawString(Font,hitPoints.ToString(), new Vector2(LifeBarPosition.X+40, LifeBarPosition.Y-2), Color.Black);
+            //spriteBatch.DrawString(Font, currentTime.ToString(),new Vector2(100,150), Color.Black);
             spriteBatch.End();
             base.Draw(gameTime);
         }
+        
     }
 }
-
-//TODO: Red color when hit
-/*
- * int counter = 1;
-int limit = 50;
-float countDuration = 2f; //every  2s.
-float currentTime = 0f;
-
-currentTime += (float)gameTime.ElapsedGameTime.TotalSeconds; //Time passed since last Update() 
-
-if (currentTime >= countDuration)
-{
-    counter++;
-    currentTime -= countDuration; // "use up" the time
-    //any actions to perform
-    }
-if (counter >= limit)
-{
-    counter = 0;//Reset the counter;
-    //any actions to perform
-}
-*/
