@@ -88,9 +88,9 @@ namespace FlyX
             if (currentMouseState.LeftButton == ButtonState.Pressed)
             {
                 if (currentMouseState.X >= flyPosition.X &&
-                    currentMouseState.X <= flyPosition.X + flyTexture.Width &&
-                    currentMouseState.Y >= flyPosition.Y &&
-                    currentMouseState.Y <= flyPosition.Y + flyTexture.Height)
+                    currentMouseState.X < flyPosition.X + flyTexture.Width-50 &&
+                    currentMouseState.Y >= flyPosition.Y-25 &&
+                    currentMouseState.Y < flyPosition.Y-25 + flyTexture.Height)
                 {
                     if (currentMouseState.LeftButton == ButtonState.Pressed &&
                         oldMouseState.LeftButton == ButtonState.Released)
@@ -108,7 +108,6 @@ namespace FlyX
                             step = 0;
                         }
                     }
-                    
                 }
                 else
                 {
@@ -131,12 +130,10 @@ namespace FlyX
             spriteBatch = new SpriteBatch(GraphicsDevice);
             flyTexture = Content.Load<Texture2D>(@"Images/Fly1");
             squashedTexture = Content.Load<Texture2D>(@"Images/squashed-fly");
-            crosshairTexture = Content.Load<Texture2D>(@"Images/aim");
+            crosshairTexture = Content.Load<Texture2D>(@"Images/crosshair");
             traceTexture = Content.Load<Texture2D>(@"Images/gap");
             lifebarTexture = Content.Load<Texture2D>(@"Images/bar");
-            
             Font = Content.Load<SpriteFont>(@"Images/Font");
-
             
         }
       
@@ -157,8 +154,6 @@ namespace FlyX
            // = 300; // currentMouseState.ScrollWheelValue;
            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                Exit();
-            if (Keyboard.GetState().IsKeyDown(Keys.Back))
-                hitPoints -= 1;
 
             if (Keyboard.GetState().IsKeyDown(Keys.Space))
             {
@@ -174,7 +169,7 @@ namespace FlyX
 
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.LightSlateGray);
+            GraphicsDevice.Clear(Color.LightGray);
 
             spriteBatch.Begin();
             if (Traces.Count > 0)
@@ -183,7 +178,7 @@ namespace FlyX
             if (!isDead)
             {
                 spriteBatch.Draw(flyTexture, flyPosition, defaultFlyColor);
-                spriteBatch.Draw(lifebarTexture, LifeBarPosition, Color.Yellow);
+                spriteBatch.Draw(lifebarTexture, LifeBarPosition, Color.Green);
             }
             //spriteBatch.DrawString(spriteFont, "x="+x.ToString()+"y="+y.ToString(), new Vector2(10, 10), Color.Black);
             else
@@ -191,8 +186,8 @@ namespace FlyX
                 spriteBatch.Draw(squashedTexture, flyPosition, Color.White);
 
             spriteBatch.Draw(crosshairTexture, crosshairPosition, Color.White);
-            spriteBatch.DrawString(Font,hitPoints.ToString(), new Vector2(LifeBarPosition.X+40, LifeBarPosition.Y-2), Color.Black);
-            //spriteBatch.DrawString(Font, currentTime.ToString(),new Vector2(100,150), Color.Black);
+            spriteBatch.DrawString(Font,hitPoints.ToString(), new Vector2(LifeBarPosition.X+40, LifeBarPosition.Y-2), Color.Yellow);
+            //spriteBatch.DrawString(Font, flyTexture.Width.ToString(),new Vector2(100,150), Color.Black);
             spriteBatch.End();
             base.Draw(gameTime);
         }

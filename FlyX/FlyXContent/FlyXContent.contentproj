@@ -45,7 +45,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Images\crosshairs_1.png">
-      <Name>aim</Name>
+      <Name>crosshair</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -59,7 +59,7 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Images\Lucilia_caesar_tr.png">
+    <Compile Include="Images\Fly.png">
       <Name>Fly1</Name>
       <Importer>TextureImporter</Importer>
       <Processor>TextureProcessor</Processor>
