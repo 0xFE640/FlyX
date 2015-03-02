@@ -4,6 +4,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
+
+
+
 // ReSharper disable CompareOfFloatsByEqualityOperator
 // ReSharper disable ConvertIfStatementToConditionalTernaryExpression
 // ReSharper disable ObjectCreationAsStatement
@@ -13,7 +16,9 @@ namespace FlyX
 {
     public class GameMain : Game
     {
-        private const int MaxLimit = 700;
+        //private const int MaxLimit = 700;
+        private readonly int displayWidth = 1024;
+        private readonly int displayHeight = 768;
         private readonly Random coord = new Random();
         private int offeset = 1;
         private const float koefSpeed = 500.0f;
@@ -31,17 +36,19 @@ namespace FlyX
         private SpriteBatch spriteBatch;
         private Texture2D flyTexture, squashedTexture, aimTexture, gapTexture;
         private Vector2 flyPosition, aimPosition;
+        private GraphicsDeviceManager graphics;
         
         public GameMain()
         {
            // IsMouseVisible = true;    
+            graphics =
+                new GraphicsDeviceManager(this)
+                {
+                    PreferredBackBufferHeight = displayHeight,
+                    PreferredBackBufferWidth = displayWidth
+                };
 
-            new GraphicsDeviceManager(this)
-            {
-                PreferredBackBufferHeight = MaxLimit,
-                PreferredBackBufferWidth = MaxLimit
-            };
-            // graphics.IsFullScreen = true;
+
             Content.RootDirectory = "Content";
             flyPosition = new Vector2(50, 50);
             aimPosition = new Vector2();
@@ -50,9 +57,9 @@ namespace FlyX
      
         protected override void Initialize()
         {
-            X = coord.Next(MaxLimit);
-            Y = coord.Next(MaxLimit);
-
+            X = coord.Next(displayWidth);
+            Y = coord.Next(displayHeight);
+            
             base.Initialize();
         }
         
@@ -77,7 +84,9 @@ namespace FlyX
            currentMouseState = Mouse.GetState();
            aimPosition.X = currentMouseState.X;
            aimPosition.Y = currentMouseState.Y;
-            
+            if (Keyboard.GetState().IsKeyDown(Keys.F))
+                
+               // graphics.IsFullScreen = true;;
            if (Keyboard.GetState().IsKeyDown(Keys.Escape))
                Exit();
             if (Keyboard.GetState().IsKeyDown(Keys.Space))
@@ -96,7 +105,7 @@ namespace FlyX
                     flyPosition.X -= offeset;
 
             if (X == flyPosition.X)
-                X = coord.Next(MaxLimit);
+                X = coord.Next(displayWidth);
 
             if (Y > flyPosition.Y)
                 flyPosition.Y += offeset;
@@ -105,7 +114,7 @@ namespace FlyX
                     flyPosition.Y -= offeset;
 
             if (Y == flyPosition.Y)
-                Y = coord.Next(MaxLimit);
+                Y = coord.Next(displayHeight);
 
             if (currentMouseState.LeftButton == ButtonState.Pressed &&
                 currentMouseState.X >= flyPosition.X &&
